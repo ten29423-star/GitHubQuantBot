@@ -14,6 +14,7 @@
 import html
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -35,6 +36,7 @@ SEARCH_PAUSE = 2.5        # секунд между запросами к GitHub
 TG_PAUSE = 1.2            # секунд между сообщениями в Telegram
 SEEN_KEEP_DAYS = 10       # сколько хранить уже виденные репо
 KEEPALIVE_EVERY_DAYS = 14 # раз в сколько дней обновлять метку в seen.json
+TRENDING_KEEP_DAYS = 7    # столько дней не слать повторно репо, которое снова в trending
 
 
 def log(msg):
@@ -49,13 +51,7 @@ def http_json(url, headers=None, data=None, timeout=30):
 
 # ---------- GitHub ----------
 
-def search_repos(tag, min_stars, since):
-    """Возвращает список репо или None, если запрос не удался."""
-    query = f"topic:{tag} stars:>={min_stars} created:>={since}"
-    params = urllib.parse.urlencode(
-        {"q": query, "sort": "stars", "order": "desc", "per_page": 100}
-    )
-    url = f"https://api.github.com/search/repositories?{params}"
+def gh_headers():
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
@@ -63,6 +59,17 @@ def search_repos(tag, min_stars, since):
     }
     if GITHUB_TOKEN:
         headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    return headers
+
+
+def search_repos(tag, min_stars, since):
+    """Возвращает список репо или None, если запрос не удался."""
+    query = f"topic:{tag} stars:>={min_stars} created:>={since}"
+    params = urllib.parse.urlencode(
+        {"q": query, "sort": "stars", "order": "desc", "per_page": 100}
+    )
+    url = f"https://api.github.com/search/repositories?{params}"
+    headers = gh_headers()
 
     for attempt in range(3):
         try:
@@ -149,6 +156,134 @@ def send_telegram(text):
     return False
 
 
+# ---------- Trending ----------
+# Официального API у GitHub Trending нет, поэтому читаем HTML страницы.
+# Если GitHub поменяет вёрстку, парсер перестанет находить репо:
+# бот напишет об этом в Telegram (не чаще раза в сутки).
+
+PERIOD_LABEL = {"daily": "сегодня", "weekly": "за неделю", "monthly": "за месяц"}
+
+
+def fetch_trending(period, language):
+    """Список {'full_name', 'stars_period'} в порядке рейтинга или None при ошибке."""
+    path = "/trending" + (f"/{urllib.parse.quote(language)}" if language else "")
+    url = f"https://github.com{path}?since={period}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (compatible; repo-alert-bot)",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            page = resp.read().decode("utf-8", "replace")
+    except Exception as e:
+        log(f"[trending/{period}] не удалось загрузить страницу: {type(e).__name__}")
+        return None
+
+    result = []
+    for art in re.findall(r'<article class="Box-row">(.*?)</article>', page, re.S):
+        m = re.search(r'<h2[^>]*>.*?<a[^>]*href="/([^"/]+/[^"/]+)"', art, re.S)
+        if not m:
+            continue
+        s = re.search(r"([\d,]+)\s+stars\s+(?:today|this week|this month)", art)
+        result.append({"full_name": m.group(1), "stars_period": s.group(1) if s else "?"})
+    return result
+
+
+def fetch_repo(full_name):
+    """Данные репо из API (даты, описание, звёзды) или None."""
+    try:
+        return http_json(f"https://api.github.com/repos/{full_name}", gh_headers())
+    except Exception as e:
+        log(f"[trending] не удалось получить {full_name}: {type(e).__name__}")
+        return None
+
+
+def format_trending(item, repo):
+    name = item["full_name"]
+    label = PERIOD_LABEL.get(item["period"], item["period"])
+    head = f'🔥 #trending\n<a href="https://github.com/{html.escape(name)}"><b>{html.escape(name)}</b></a>\n'
+    if not repo:
+        return head + f"+{item['stars_period']} звёзд {label}"
+    desc = (repo.get("description") or "без описания").strip()
+    if len(desc) > 300:
+        desc = desc[:297] + "..."
+    lang = repo.get("language") or "—"
+    return (
+        head
+        + f"{html.escape(desc)}\n\n"
+        + f"⭐ {repo['stargazers_count']} (+{item['stars_period']} {label}) · "
+        + f"🍴 {repo['forks_count']} · {html.escape(lang)} · создан {repo['created_at'][:10]}"
+    )
+
+
+def run_trending(config, state, now):
+    cfg = config.get("trending") or {}
+    if not cfg.get("enabled"):
+        return
+    seeded = "trending_seen" in state
+    tseen = state.setdefault("trending_seen", {})
+    max_age = cfg.get("max_repo_age_days")
+
+    items, names, ok = [], set(), 0
+    for period in cfg.get("periods", ["daily"]):
+        for lang in cfg.get("languages", [""]):
+            got = fetch_trending(period, lang)
+            time.sleep(1)
+            if got is None:
+                continue
+            ok += 1
+            if not got:
+                today = now.strftime("%Y-%m-%d")
+                log(f"[trending/{period}] на странице не найдено ни одного репо (вёрстка?)")
+                if state.get("trending_warned") != today and not DRY_RUN:
+                    send_telegram("⚠️ Trending: парсер ничего не нашёл. Возможно, GitHub поменял вёрстку страницы.")
+                    state["trending_warned"] = today
+            for it in got:
+                key = it["full_name"].lower()
+                if key not in names:
+                    names.add(key)
+                    it["period"] = period
+                    items.append(it)
+    if not ok:
+        return
+
+    new = [it for it in items if it["full_name"].lower() not in tseen]
+    log(f"[trending] на странице: {len(items)}, новых: {len(new)}")
+
+    if not seeded and not DRY_RUN:
+        for it in new:
+            tseen[it["full_name"].lower()] = now.isoformat()
+        send_telegram(
+            f"Trending подключён: {len(new)} репо сейчас в списке, они помечены как просмотренные. "
+            "Дальше буду присылать только те, что попадут в trending позже."
+        )
+        return
+
+    limit = cfg.get("max_messages_per_run", 5)
+    for it in new[:limit]:
+        key = it["full_name"].lower()
+        repo = fetch_repo(it["full_name"])
+        if repo and max_age:
+            created = datetime.fromisoformat(repo["created_at"].replace("Z", "+00:00"))
+            if (now - created).days > max_age:
+                tseen[key] = now.isoformat()  # старое репо: запоминаем без уведомления
+                continue
+        if send_telegram(format_trending(it, repo)):
+            tseen[key] = now.isoformat()
+        time.sleep(0 if DRY_RUN else TG_PAUSE)
+
+    cutoff = now - timedelta(days=TRENDING_KEEP_DAYS)
+    for key in list(tseen):
+        try:
+            if datetime.fromisoformat(tseen[key]) < cutoff:
+                del tseen[key]
+        except ValueError:
+            del tseen[key]
+
+
 # ---------- Состояние ----------
 
 def load_state():
@@ -205,6 +340,11 @@ def main():
         if len(new) > limit:
             log(f"Лимит {limit} сообщений за запуск, ещё {len(new) - limit} уйдут в следующий раз")
         log(f"Отправлено: {sent}")
+
+    try:
+        run_trending(config, state, now)
+    except Exception as e:
+        log(f"[trending] ошибка: {type(e).__name__}: {e}")
 
     if DRY_RUN:
         return
