@@ -3,32 +3,67 @@
   "max_messages_per_run": 10,
   "categories": {
     "crypto": {
-      "tags": ["crypto", "cryptocurrency"],
+      "tags": [
+        "crypto",
+        "cryptocurrency"
+      ],
       "min_stars": 50
     },
     "meme": {
-      "tags": ["meme", "memes", "chan"],
+      "tags": [
+        "meme",
+        "memes",
+        "chan"
+      ],
       "min_stars": 20
     },
     "weird": {
-      "tags": ["weird"],
+      "tags": [
+        "weird"
+      ],
       "min_stars": 20
     },
     "animals": {
-      "tags": ["animals", "pet"],
+      "tags": [
+        "animals",
+        "pet"
+      ],
       "min_stars": 20
     },
     "anti-ai": {
-      "tags": ["anti-ai", "data-poisoning"],
+      "tags": [
+        "anti-ai",
+        "data-poisoning"
+      ],
       "min_stars": 10
     },
     "ai-jailbreak": {
-      "tags": ["llm-jailbreak", "prompt-injection", "jailbreak"],
+      "tags": [
+        "llm-jailbreak",
+        "prompt-injection",
+        "jailbreak"
+      ],
       "min_stars": 20
     },
     "other": {
-      "tags": ["nvidia", "solana", "bitcoin", "stocks"],
+      "tags": [
+        "nvidia",
+        "solana",
+        "bitcoin",
+        "stocks"
+      ],
       "min_stars": 150
     }
+  },
+  "trending": {
+    "enabled": true,
+    "periods": [
+      "daily"
+    ],
+    "languages": [
+      ""
+    ],
+    "max_messages_per_run": 5,
+    "max_repo_age_days": null
   }
 }
