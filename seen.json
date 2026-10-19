@@ -32,6 +32,7 @@
   "comfy-org/comfyui": "2026-10-18T11:31:43.465731+00:00",
   "cursor/plugins": "2026-10-16T11:01:32.007376+00:00",
   "debpalash/voicestudio": "2026-10-13T16:01:12.299057+00:00",
+  "headroomlabs-ai/headroom": "2026-10-19T11:57:42.541409+00:00",
   "hkuds/cli-anything": "2026-10-16T11:01:32.007376+00:00",
   "hmjz100/linkswift": "2026-10-16T11:01:32.007376+00:00",
   "juliusbrussee/caveman": "2026-10-15T18:58:20.320179+00:00",
@@ -47,9 +48,11 @@
   "nationalsecurityagency/ghidra": "2026-10-15T19:07:47.783334+00:00",
   "obra/superpowers": "2026-10-15T18:58:20.320179+00:00",
   "ruvnet/ruflo": "2026-10-15T18:58:20.320179+00:00",
+  "shiyu-coder/kronos": "2026-10-19T11:57:42.541409+00:00",
   "stablyai/orca": "2026-10-17T13:25:39.473642+00:00",
   "storytold/artcraft": "2026-10-13T16:01:12.299057+00:00",
   "vercel-labs/skills": "2026-10-13T16:01:12.299057+00:00",
+  "withmarbleapp/os-taxonomy": "2026-10-19T11:57:42.541409+00:00",
   "xerj-org/xerj": "2026-10-15T19:07:47.783334+00:00",
   "xtool-org/xtool": "2026-10-13T16:01:12.299057+00:00"
  }
