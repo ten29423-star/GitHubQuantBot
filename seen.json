@@ -37,6 +37,7 @@
   "1450513934": "2026-11-08T22:38:30.712576+00:00"
  },
  "trending_seen": {
+  "addyosmani/agent-skills": "2026-11-10T11:29:26.633236+00:00",
   "angular/angular": "2026-11-06T18:48:26.391692+00:00",
   "anthropics/claude-quickstarts": "2026-11-08T13:45:35.836494+00:00",
   "anthropics/skills": "2026-11-07T11:14:09.233944+00:00",
@@ -80,8 +81,10 @@
   "tailwindlabs/tailwindcss": "2026-11-07T11:14:09.233944+00:00",
   "the-pr-agent/pr-agent": "2026-11-04T15:55:37.982897+00:00",
   "thysrael/horizon": "2026-11-04T21:42:45.445154+00:00",
+  "tokio-rs/topcoat": "2026-11-10T11:29:26.633236+00:00",
   "usagi-org/ai-goofish-monitor": "2026-11-03T14:31:42.135163+00:00",
   "vercel-labs/agent-browser": "2026-11-05T17:31:10.084850+00:00",
+  "we-promise/sure": "2026-11-10T11:29:26.633236+00:00",
   "zed-industries/zed": "2026-11-06T11:44:47.439568+00:00",
   "zhulinsen/daily_stock_analysis": "2026-11-09T20:55:21.749054+00:00"
  }
