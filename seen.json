@@ -42,11 +42,8 @@
  "trending_seen": {
   "affaan-m/ecc": "2026-11-17T10:56:26.131887+00:00",
   "ag-ui-protocol/ag-ui": "2026-11-14T13:54:56.629192+00:00",
-  "alibaba/open-code-review": "2026-11-13T11:48:45.257606+00:00",
   "appwrite/appwrite": "2026-11-18T18:58:33.584812+00:00",
   "astral-sh/uv": "2026-11-18T18:58:33.584812+00:00",
-  "backnotprop/plannotator": "2026-11-13T11:48:45.257606+00:00",
-  "block/buzz": "2026-11-13T11:48:45.257606+00:00",
   "cathrynlavery/diagram-design": "2026-11-19T18:27:19.254249+00:00",
   "chromedevtools/chrome-devtools-mcp": "2026-11-13T19:07:55.557346+00:00",
   "cursor/plugins": "2026-11-17T10:56:26.131887+00:00",
@@ -64,7 +61,6 @@
   "juliusbrussee/caveman": "2026-11-14T13:54:56.629192+00:00",
   "kajisho5/ffmpeg-skill": "2026-11-17T02:16:22.794681+00:00",
   "likely7/veyra-nrvideo": "2026-11-13T19:07:55.557346+00:00",
-  "louislam/uptime-kuma": "2026-11-13T11:48:45.257606+00:00",
   "martin-olivier/airgorah": "2026-11-14T13:54:56.629192+00:00",
   "mjmirza/app-store-compliance": "2026-11-19T18:27:19.254249+00:00",
   "mvanhorn/last30days-skill": "2026-11-16T18:45:04.262067+00:00",
@@ -80,7 +76,6 @@
   "tencent/loopforge": "2026-11-14T13:54:56.629192+00:00",
   "toeverything/affine": "2026-11-20T00:48:09.831665+00:00",
   "tracer-cloud/opensre": "2026-11-19T18:27:19.254249+00:00",
-  "tradermonty/claude-trading-skills": "2026-11-13T11:48:45.257606+00:00",
   "xiaoyouchr/ghost-downloader-3": "2026-11-20T00:48:09.831665+00:00",
   "zhouxiaoka/autoclip": "2026-11-20T00:48:09.831665+00:00"
  }
